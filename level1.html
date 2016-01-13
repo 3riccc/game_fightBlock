@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Gamedev Canvas Workshop</title>
+    <style>
+    	* { padding: 0; margin: 0; }
+    	canvas { background: #eee; display: block; margin: 0 auto; }
+    </style>
+    <script src="jquery-min.js"></script>
+    <script src="autoPlay.js"></script>
+</head>
+<body>
+
+<canvas id="myCanvas" width="480" height="320"></canvas>
+
+<script>
+function good1(){
+    $('#myCanvas').audioPlay({
+        urlMp3: "fff.wav",
+        urlOgg: "fff.wav",
+    });
+}
+// 画布
+var canvas = document.getElementById("myCanvas");
+// 获取2d
+var ctx = canvas.getContext("2d");
+// 小球半径
+var ballRadius = 5;
+// 小球初始位置
+var x = canvas.width/2;
+var y = canvas.height-30;
+// 小球每10毫秒在水平和数值方向移动的像素数量，水平正方向为左，竖直正方向为上
+var dx = 2;
+var dy = -2;
+// 挡板高度，宽度
+var paddleHeight = 5;
+var paddleWidth = 75;
+
+// 挡板初始位置
+var paddleX = (canvas.width-paddleWidth)/20;
+// 是否按下了左右键
+var rightPressed = false;
+var leftPressed = false;
+// 砖块5行3列
+var brickRowCount = 5;
+var brickColumnCount = 3;
+// 砖块宽度，高度
+var brickWidth = 75;
+var brickHeight = 20;
+// 砖块间距
+var brickPadding = 10;
+// 砖块距离上边和左边的距离
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+var score = 0;
+
+// 构造一个二维数组存储所有砖块
+var bricks = [];
+for(c=0; c<brickColumnCount; c++) {
+    bricks[c] = [];
+    for(r=0; r<brickRowCount; r++) {
+        bricks[c][r] = { x: 0, y: 0, status: 1 };
+    }
+}
+// 添加监听事件
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", mouseMoveHandler, false);
+
+function keyDownHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = true;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = true;
+    }
+}
+function keyUpHandler(e) {
+    if(e.keyCode == 39) {
+        rightPressed = false;
+    }
+    else if(e.keyCode == 37) {
+        leftPressed = false;
+    }
+}
+function mouseMoveHandler(e) {
+    var relativeX = e.clientX - canvas.offsetLeft;
+    if(relativeX > 0 && relativeX < canvas.width) {
+        paddleX = relativeX - paddleWidth/2;
+    }
+}
+// 碰撞检测
+function collisionDetection() {
+    // 循环遍历二维数组
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            var b = bricks[c][r];
+            if(b.status == 1) {
+                // 如果碰撞
+                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                    // 更改方向
+                    dy = -dy;
+                    // 砖块消失
+                    b.status = 0;
+                    // 记录分数
+                    score++;
+                    // 判断输赢
+                    
+                    if(score == brickRowCount*brickColumnCount) {
+                        alert("你赢了，欢迎来到第二关！");
+                        window.location.href="level2.html";
+                    }
+                }
+            }
+        }
+    }
+}
+// 画球
+function drawBall() {
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+    ctx.fillStyle = "lightgreen";
+    ctx.fill();
+    ctx.closePath();
+}
+// 画挡板
+function drawPaddle() {
+    ctx.beginPath();
+    ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+    ctx.fillStyle = "lightblue";
+    ctx.fill();
+    ctx.closePath();
+}
+// 画砖块
+function drawBricks() {
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status == 1) {
+                var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+                var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                // 转块颜色
+                ctx.fillStyle = "#0095DD";
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
+}
+// 写出分数
+function drawScore() {
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#0095DD";
+    ctx.fillText("Score: "+score, 8, 20);
+}
+// 主函数，一个一个调用以上函数
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBricks();
+    drawBall();
+    drawPaddle();
+    drawScore();
+    collisionDetection();
+    
+    if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+    if(y + dy < ballRadius) {
+        dy = -dy;
+    }
+    else if(y + dy > canvas.height-ballRadius) {
+        if(x > paddleX && x < paddleX + paddleWidth) {
+            dy = -dy;
+        }
+        else {
+            alert("游戏结束");
+            window.location.href="index.html";
+            
+        }
+    }
+    
+    if(rightPressed && paddleX < canvas.width-paddleWidth) {
+        paddleX += 7;
+    }
+    else if(leftPressed && paddleX > 0) {
+        paddleX -= 7;
+    }
+    
+    x += dx;
+    y += dy;
+}
+// 每十毫秒调用一次
+setInterval(draw, 10);
+</script>
+</body>
+</html>

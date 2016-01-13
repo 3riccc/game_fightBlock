@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>打砖块丛丛版</title>
+	<style>
+		.title{
+			display: block;
+			margin:0 auto;
+			font-size: 30px;
+			color: lightgreen;
+			text-align: center;
+			margin-top: 300px;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+	<span class="title">恭喜通关，是否进入变态关卡？</span><br>
+	<span onclick="jump(0)" class="title" style="font-size:12px;margin-top:100px">我是怂逼，我不敢去</span><br>
+	<span onclick="jump(1)" class="title" style="font-size:12px;margin-top:100px">我要挑战变态关卡</span>
+	<script>
+	function jump(type){
+		if(type==0){
+			window.location.href="index.html";
+		}else{
+			window.location.href="biantai.html"
+		}
+	}
+	</script>
+</body>
+</html>
